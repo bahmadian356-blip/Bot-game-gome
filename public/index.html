@@ -1,44 +1,88 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>BEHI PLAY</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div id="app">
-    <header>
-      <h1>BEHI PLAY 🚢</h1>
-      <div id="user-info">در حال بارگذاری پروفایل...</div>
-    </header>
 
-    <main>
-      <section id="menu-screen" class="screen active">
-        <h2>انتخاب بازی</h2>
-        <div class="game-card" onclick="startBattleshipGame()">
-          <h3>🚢 کشتی مخفی (Battleship)</h3>
-          <p>بازی کلاسیک نبرد ناوها به صورت آنلاین یا با هوش مصنوعی</p>
-        </div>
-      </section>
+  <!-- HOME -->
+  <section id="screen-home" class="screen active">
+    <div class="title">🎮 BEHI PLAY</div>
+    <div class="card">
+      <div class="subtitle">خوش اومدی <span id="home-username">بازیکن</span> 👋</div>
+      <div id="home-stats"></div>
+    </div>
+    <button class="btn" onclick="showScreen('games')">🎮 شروع بازی</button>
+    <button class="btn secondary" onclick="showScreen('leaderboard')">🏆 مشاهده رتبه‌بندی</button>
+  </section>
 
-      <section id="lobby-screen" class="screen">
-        <h2>اتاق بازی</h2>
-        <div id="room-code-display">کد اتاق: <span id="code-text">---</span></div>
-        <div id="players-list">بازیکنان:</div>
-        <button id="start-vs-bot-btn" onclick="startVsBot()">شروع بازی با هوش مصنوعی</button>
-      </section>
+  <!-- GAMES -->
+  <section id="screen-games" class="screen">
+    <div class="title">🎮 بازی‌ها</div>
+    <div class="game-grid">
+      <div class="game-tile" onclick="openGame('battleship')"><span class="emoji">🚢</span>کشتی مخفی</div>
+      <div class="game-tile" onclick="openGame('ludo')"><span class="emoji">🎲</span>منچ</div>
+      <div class="game-tile" onclick="openGame('tictactoe')"><span class="emoji">❌</span>دوز</div>
+      <div class="game-tile" onclick="openGame('rps')"><span class="emoji">✂️</span>سنگ کاغذ قیچی</div>
+      <div class="game-tile" onclick="openGame('wordgame')"><span class="emoji">🔤</span>بازی کلمات</div>
+    </div>
+  </section>
 
-      <section id="game-screen" class="screen">
-        <h2>میدان نبرد</h2>
-        <div id="battleship-board-container"></div>
-        <div id="game-status-text">نوبت شماست!</div>
-      </section>
-    </main>
-  </div>
+  <!-- GAME LOBBY (mode select + invite) -->
+  <section id="screen-lobby" class="screen">
+    <div class="title" id="lobby-title">لابی بازی</div>
+    <div class="card" id="lobby-mode-select">
+      <button class="btn" onclick="createGameAndInvite()">👥 بازی با دوست</button>
+      <button class="btn accent" onclick="createGameVsBot()">🤖 بازی با Bot</button>
+    </div>
+    <div class="card" id="lobby-waiting" style="display:none;">
+      <div class="subtitle">کد بازی: <b id="lobby-code"></b></div>
+      <button class="btn secondary" onclick="shareInviteLink()">🔗 ارسال لینک دعوت</button>
+      <div id="lobby-players"></div>
+    </div>
+    <button class="btn secondary" onclick="showScreen('games')">بازگشت</button>
+  </section>
 
-  <script src="app.js"></script>
+  <!-- BATTLESHIP GAME SCREEN -->
+  <section id="screen-battleship" class="screen">
+    <div class="title">🚢 کشتی مخفی</div>
+    <div id="battleship-status" class="subtitle"></div>
+    <div id="battleship-board" class="board-grid"></div>
+    <div class="card">
+      <div class="chat-box" id="chat-box"></div>
+      <div class="chat-input-row">
+        <input id="chat-input" placeholder="پیام..." />
+        <button class="btn" style="width:auto;" onclick="sendChat()">ارسال</button>
+      </div>
+    </div>
+    <button class="btn secondary" onclick="showScreen('games')">خروج از بازی</button>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="screen-leaderboard" class="screen">
+    <div class="title">🏆 رتبه‌بندی</div>
+    <div class="card" id="leaderboard-list">در حال بارگذاری...</div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="screen-profile" class="screen">
+    <div class="title">👤 پروفایل من</div>
+    <div class="card" id="profile-card">در حال بارگذاری...</div>
+  </section>
+
+  <!-- TAB BAR -->
+  <nav class="tabbar">
+    <button onclick="showScreen('home')" data-tab="home"><span class="emoji">🏠</span>خانه</button>
+    <button onclick="showScreen('games')" data-tab="games"><span class="emoji">🎮</span>بازی‌ها</button>
+    <button onclick="showScreen('leaderboard')" data-tab="leaderboard"><span class="emoji">🏆</span>رتبه</button>
+    <button onclick="showScreen('profile')" data-tab="profile"><span class="emoji">👤</span>پروفایل</button>
+  </nav>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>
