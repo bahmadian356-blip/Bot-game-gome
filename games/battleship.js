@@ -1,14 +1,18 @@
 // games/battleship/battleship.js
+// Authoritative server-side Battleship logic. Board state and hits/misses are
+// always computed and stored here — the client only renders what the server sends.
+
 const supabase = require('../../lib/supabase');
 const { randomChoice, humanLikeDelayMs } = require('../../lib/aiPlayerService');
 
 const BOARD_SIZE = 10;
-const SHIP_SIZES = [5, 4, 3, 3, 2];
+const SHIP_SIZES = [5, 4, 3, 3, 2]; // Carrier, Battleship, Cruiser, Submarine, Destroyer
 
 function emptyBoard() {
   return Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
 }
 
+/** Randomly places all ships for a board (used for Bot players). */
 function randomShipPlacement() {
   const board = emptyBoard();
   const ships = [];
@@ -43,6 +47,7 @@ function randomShipPlacement() {
   return { board, ships };
 }
 
+/** Validates a manual placement submitted by a human player. */
 function validatePlacement(ships) {
   if (!Array.isArray(ships) || ships.length !== SHIP_SIZES.length) return false;
   const occupied = new Set();
@@ -61,6 +66,7 @@ function validatePlacement(ships) {
   return true;
 }
 
+/** Stores a player's board (ships + cells) for a given game. */
 async function saveBoard(gameId, telegramId, isBot, ships) {
   const { error } = await supabase.from('battleship_boards').insert({
     game_id: gameId,
@@ -82,6 +88,7 @@ async function getBoard(gameId, ownerKey) {
   return data;
 }
 
+/** Applies a shot at (row,col) against the target's ships. Returns {result, sunk, allSunk}. */
 async function applyShot({ gameId, shooterTelegramId, targetIsBot, row, col }) {
   const { data: targetBoard, error } = await supabase
     .from('battleship_boards')
@@ -113,13 +120,17 @@ async function applyShot({ gameId, shooterTelegramId, targetIsBot, row, col }) {
     game_id: gameId,
     shooter_telegram_id: shooterTelegramId,
     target_is_bot: targetIsBot,
-    row, col, result,
+    row,
+    col,
+    result,
   });
 
   const allSunk = ships.every((s) => s.hits.length === s.cells.length);
+
   return { result, sunkShip, allSunk };
 }
 
+/** Picks the Bot's next shot: simple hunt-and-target AI (not fully random once a hit lands). */
 async function pickBotShot(gameId) {
   const { data: shots, error } = await supabase
     .from('battleship_shots')
@@ -156,6 +167,12 @@ async function pickBotShot(gameId) {
 }
 
 module.exports = {
-  BOARD_SIZE, SHIP_SIZES, randomShipPlacement, validatePlacement,
-  saveBoard, getBoard, applyShot, pickBotShot,
+  BOARD_SIZE,
+  SHIP_SIZES,
+  randomShipPlacement,
+  validatePlacement,
+  saveBoard,
+  getBoard,
+  applyShot,
+  pickBotShot,
 };
