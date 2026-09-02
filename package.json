@@ -1,0 +1,22 @@
+{
+  "name": "bot-play",
+  "version": "1.0.0",
+  "description": "BEHI PLAY - Telegram Mini App multiplayer game platform (Battleship, more coming)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "node-telegram-bot-api": "^0.66.0",
+    "@supabase/supabase-js": "^2.45.4",
+    "dotenv": "^16.4.5",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
